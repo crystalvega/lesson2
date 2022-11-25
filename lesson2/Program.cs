@@ -9,8 +9,6 @@ namespace TestFormalNeuron
     {
         struct FormalNeuron
         {
-                public double a;
-                public double b;
                 public double[] w = { 0, 0, 0, 0 };
                 public int c = 0;
                 public FormalNeuron(int[][] X, int[] Y, double A, double B)
