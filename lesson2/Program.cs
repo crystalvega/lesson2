@@ -9,65 +9,100 @@ namespace TestFormalNeuron
     {
         struct FormalNeuron
         {
-                public double[] w = { 0, 0, 0, 0 };
-                public int c = 0;
-                public FormalNeuron(int[][] X, int[] Y, double A, double B)
+            public double[] w = { 0, 0, 0, 0 };
+            double a;
+            double b;
+            int c;
+
+            public FormalNeuron(int[][] X, int[] Y, double A, double B, int C)
+            {
+                a = A;
+                b = B;
+                c = C;
+                while (learn(X, Y))
                 {
-                    a = A;
-                    b = B;
-                    while (learn(X, Y))
+                    if (c++ > 10000) break;
+                }
+            }
+
+            public double calculate(int[] x)
+            {
+                double s = b;
+                for (int i = 0; i < w.Length; i++) s += w[i] * x[i];
+                return (s > 0) ? 1 : 0;
+            }
+
+            bool learn(int[][] X, int[] Y)
+            {
+                double[] w_ = new double[w.Length];
+
+                Array.Copy(w, w_, w.Length);
+
+                int i = 0;
+                foreach (int[] x in X)
+                {
+                    int y = Y[i++];
+                    for (int j = 0; j < x.Length; j++)
                     {
-                        if (c++ > 10000) break;
+                        w[j] += a * (y - calculate(x)) * x[j];
                     }
                 }
-
-                public double calculate(int[] x)
+                return !Enumerable.SequenceEqual(w_, w);
+            }
+            public void GetInfo(int[][] Test)
+            {
+                Console.WriteLine("[{0}] {1}",
+                string.Join(", ", w),
+                c
+                );
+                foreach (int[] test in Test)
                 {
-                    double s = b;
-                    for (int i = 0; i < w.Length; i++) s += w[i] * x[i];
-                    return (s > 0) ? 1 : 0;
-                }
-
-                bool learn(int[][] X, int[] Y)
-                {
-                    double[] w_ = new double[w.Length];
-
-                    Array.Copy(w, w_, w.Length);
-
-                    int i = 0;
-                    foreach (int[] x in X)
-                    {
-                        int y = Y[i++];
-                        for (int j = 0; j < x.Length; j++)
-                        {
-                            w[j] += a * (y - calculate(x)) * x[j];
-                        }
-                    }
-                    return !Enumerable.SequenceEqual(w_, w);
-                }
-                public void GetInfo(int[][] Test)
-                {
-                    Console.WriteLine("[{0}] {1}",
-                    string.Join(", ", w),
-                    c
+                    Console.WriteLine("[{0}] {1} {2}",
+                        string.Join(", ", test),
+                        test[3],
+                        calculate(test)
                     );
-                    foreach (int[] test in Test)
-                    {
-                        Console.WriteLine("[{0}] {1} {2}",
-                            string.Join(", ", test),
-                            test[3],
-                            calculate(test)
-                        );
-                    }
                 }
+            }
         }
 
         class Settings
         {
-            public double a = 0.02;
-            public double b = -0.4;
+            internal double a, b;
+            internal int c;
 
-            public int[][] X =
+            public Settings()
+            {
+                a = 0.02;
+                b = -0.4;
+                c = 0;
+            }
+            public Settings(double A)
+            {
+                a = A;
+                b = -0.4;
+                c = 0;
+            }
+            public Settings(double A, double B)
+            {
+                a = A;
+                b = B;
+                c = 0;
+            }
+            public Settings(double A, double B, int C)
+            {
+                a = A;
+                b = B;
+                c = C;
+            }
+            public Settings(double B, int C)
+            {
+                a = 0.02;
+                b = B;
+                c = C;
+
+            }
+            internal int[][] X =
             {
                 new int [] {0, 0, 0, 0},
                 new int [] {0, 0, 0, 1},
@@ -76,9 +111,9 @@ namespace TestFormalNeuron
                 new int [] {1, 1, 1, 1}
             };
 
-            public int[] Y = { 0, 1, 1, 0, 1 };
+            internal int[] Y = { 0, 1, 1, 0, 1 };
 
-            public int[][] Test =
+            internal int[][] Test =
             {
                 new int [] {0, 0, 0, 0},
                 new int [] {0, 0, 0, 1},
@@ -91,8 +126,41 @@ namespace TestFormalNeuron
 
         public static int Main()
         {
-            Settings s = new Settings();
-            FormalNeuron neuron = new(s.X, s.Y, s.a, s.b);
+            double a, b;
+            Console.Write("Введите значение A: ");
+            bool isDouble = Double.TryParse(Console.ReadLine(), out a);
+            if (!isDouble)
+            {
+                Console.WriteLine("Введено значение не соответствующее переменной Double, установлено значение 0.02");
+                a = 0.02;
+            }
+
+            Console.Write("Введите значение B: ");
+            isDouble = Double.TryParse(Console.ReadLine(), out b);
+            if (!isDouble)
+            {
+                Console.WriteLine("Введено значение не соответствующее переменной Double, установлено значение -0.04");
+                b = -0.04;
+            }
+
+            Console.Write("Введите значение C: ");
+            isDouble = Int32.TryParse(Console.ReadLine(), out int c);
+            if (!isDouble)
+            {
+                Console.WriteLine("Введено значение не соответствующее переменной Int, установлено значение 0");
+                c = 0;
+            }
+
+            Console.Write("Для переменных установлены следующие значения: (A = ");
+            Console.Write(a);
+            Console.Write(", B = ");
+            Console.Write(b);
+            Console.Write(", C = ");
+            Console.Write(c);
+            Console.WriteLine(")");
+
+            Settings s = new Settings(a, b, c);
+            FormalNeuron neuron = new(s.X, s.Y, s.a, s.b, s.c);
             neuron.GetInfo(s.Test);
             return 0;
         }
